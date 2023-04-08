@@ -10,7 +10,6 @@ async function bootstrap() {
       "This API provides the management of a company's carbon emmission"
     )
     .setVersion('1.0')
-    .addTag('blue')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

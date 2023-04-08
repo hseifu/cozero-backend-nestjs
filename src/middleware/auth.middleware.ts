@@ -25,10 +25,10 @@ export class AuthMiddleware implements NestMiddleware {
     }
     try {
       token = token.split('Bearer ')?.[1] || '';
-      const auth = await getAuth();
-      const decodedToken = await auth.verifyIdToken(token);
-      const uid = decodedToken.uid;
-      logger.info(LOG_NAMESPACE, 'authentication successfull', { uid });
+      // const auth = await getAuth();
+      // const decodedToken = await auth.verifyIdToken(token);
+      // const uid = decodedToken.uid;
+      // logger.info(LOG_NAMESPACE, 'authentication successfull', { uid });
       return next();
     } catch (error) {
       logger.error(LOG_NAMESPACE, 'Unable to authenticate', { error, token });

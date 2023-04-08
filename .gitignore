@@ -19,7 +19,7 @@ lerna-debug.log*
 /.nyc_output
 
 # KEYS
-.env
+.env*
 
 # IDEs and editors
 /.idea
@@ -36,3 +36,6 @@ lerna-debug.log*
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+
+# Scripts
+scripts/

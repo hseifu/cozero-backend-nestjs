@@ -7,59 +7,62 @@ import {
   Patch,
   Delete
 } from '@nestjs/common';
-import { IProject } from './projects.model';
 import { ProjectsService } from './projects.service';
+import { Project } from '@prisma/client';
 
 @Controller('api/projects')
 export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
 
   @Post()
-  async addProduct(
-    @Body('name') name: IProject['name'],
-    @Body('description') description: IProject['description'],
-    @Body('amount') amount: IProject['amount'],
-    @Body('status') status: IProject['status']
+  async addProject(
+    @Body('name') name: Project['name'],
+    @Body('description') description: Project['description'],
+    @Body('amount') amount: Project['amount'],
+    @Body('status') status: Project['status'],
+    @Body('ownerId') ownerId: Project['ownerId']
   ) {
-    const prodId = await this.projectsService.addProduct(
+    const prod = await this.projectsService.addProject({
       name,
       description,
       amount,
-      status
-    );
-    return { id: prodId };
+      status,
+      owner: {
+        connect: {
+          id: ownerId
+        }
+      }
+    });
+    return { id: prod.id };
   }
 
   @Get()
   async getAllProjects() {
-    const projects = await this.projectsService.getAllProjects();
+    const projects = await this.projectsService.getAllProjects({});
     return projects;
   }
 
   @Get(':id')
-  async getProduct(@Param('id') id: string) {
-    return await this.projectsService.getProduct(id);
+  async getProject(@Param('id') id: string) {
+    return await this.projectsService.getProject({ id });
   }
 
   @Patch(':id')
-  async updateProduct(
-    @Param('id') id: IProject['id'],
-    @Body('name') name: IProject['name'],
-    @Body('description') description: IProject['description'],
-    @Body('amount') amount: IProject['amount'],
-    @Body('status') status: IProject['status']
+  async updateProject(
+    @Param('id') id: Project['id'],
+    @Body('name') name: Project['name'],
+    @Body('description') description: Project['description'],
+    @Body('amount') amount: Project['amount'],
+    @Body('status') status: Project['status']
   ) {
-    return await this.projectsService.updateProduct(
-      id,
-      name,
-      description,
-      amount,
-      status
-    );
+    return await this.projectsService.updateProject({
+      where: { id },
+      data: { name, description, amount, status }
+    });
   }
 
   @Delete(':id')
-  async removeProduct(@Param('id') id: IProject['id']) {
-    return await this.projectsService.removeProduct(id);
+  async removeProject(@Param('id') id: Project['id']) {
+    return await this.projectsService.removeProject({ where: { id } });
   }
 }

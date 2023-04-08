@@ -1,85 +1,55 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { IProject } from './projects.model';
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { Project, Prisma } from '@prisma/client';
 
 @Injectable()
 export class ProjectsService {
-  constructor(
-    @InjectModel('Project') private readonly productModel: Model<IProject>
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
-  async addProduct(
-    name: string,
-    description: string,
-    amount: number,
-    status: string
-  ) {
-    const newProduct = new this.productModel({
-      description,
-      name,
-      amount,
-      status
+  async addProject(data: Prisma.ProjectCreateInput): Promise<Project> {
+    const result = await this.prisma.project.create({ data });
+    return result;
+  }
+  async addProjects(data: Prisma.ProjectCreateManyInput) {
+    const result = await this.prisma.project.createMany({ data });
+    return result;
+  }
+
+  async getAllProjects({
+    where,
+    cursor,
+    orderBy
+  }: {
+    where?: Prisma.ProjectWhereInput;
+    cursor?: Prisma.ProjectWhereUniqueInput;
+    orderBy?: Prisma.UserOrderByWithRelationInput;
+  }): Promise<Project[]> {
+    const projects = await this.prisma.project.findMany({
+      where,
+      cursor,
+      orderBy
     });
-    const result = await newProduct.save();
-    return result.id;
+    return projects;
   }
 
-  async getAllProjects() {
-    const projects = await this.productModel.find().exec();
-    return projects.map((prod) => ({
-      id: prod.id,
-      name: prod.name,
-      description: prod.description,
-      amount: prod.amount,
-      status: prod.status
-    }));
-  }
-
-  async getProduct(prodId: IProject['id']): Promise<IProject> {
-    const prod = await this.findProduct(prodId);
+  async getProject(where: Prisma.ProjectWhereUniqueInput): Promise<Project> {
+    const prod = await this.prisma.project.findUnique({ where });
     return prod;
   }
 
-  async updateProduct(
-    prodId: IProject['id'],
-    name: IProject['name'],
-    description: IProject['description'],
-    amount: IProject['amount'],
-    status: IProject['status']
-  ) {
-    const updates: Partial<IProject> = {};
-    if (name) {
-      updates.name = name;
-    }
-    if (description) {
-      updates.description = description;
-    }
-    if (amount) {
-      updates.amount = amount;
-    }
-    if (status) {
-      updates.status = status;
-    }
-    await this.productModel.updateOne({ id: prodId }, updates).exec();
-    return;
+  async updateProject({
+    where,
+    data
+  }: {
+    where: Prisma.ProjectWhereUniqueInput;
+    data: Prisma.ProjectUpdateInput;
+  }) {
+    const result = await this.prisma.project.update({ where, data });
+    return result;
   }
 
-  async removeProduct(id: IProject['id']) {
-    await this.productModel.deleteOne({ id }).exec();
-  }
-
-  private async findProduct(prodId: IProject['id']): Promise<IProject> {
-    const project = await this.productModel.findById(prodId).exec();
-    if (!project) {
-      throw new NotFoundException('No project found');
-    }
-    return {
-      id: project.id,
-      name: project.name,
-      description: project.description,
-      amount: project.amount,
-      status: project.status
-    };
+  async removeProject({ where }: { where: Prisma.ProjectWhereUniqueInput }) {
+    const result = await this.prisma.project.delete({ where });
+    return result;
   }
 }
