@@ -7,29 +7,26 @@ import {
   Patch,
   Delete
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { ProjectsService } from './projects.service';
 import { Project } from '@prisma/client';
+import { CreateProjectDto, UpdateProjectDto } from './dto';
 
 @Controller('api/projects')
+@ApiTags('projects')
 export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
 
   @Post()
-  async addProject(
-    @Body('name') name: Project['name'],
-    @Body('description') description: Project['description'],
-    @Body('amount') amount: Project['amount'],
-    @Body('status') status: Project['status'],
-    @Body('ownerId') ownerId: Project['ownerId']
-  ) {
+  async addProject(@Body() createProjectDto: CreateProjectDto) {
     const prod = await this.projectsService.addProject({
-      name,
-      description,
-      amount,
-      status,
+      name: createProjectDto.name,
+      description: createProjectDto.description,
+      amount: createProjectDto.amount,
+      status: createProjectDto.status,
       owner: {
         connect: {
-          id: ownerId
+          id: createProjectDto.ownerId
         }
       }
     });
@@ -49,15 +46,17 @@ export class ProjectsController {
 
   @Patch(':id')
   async updateProject(
-    @Param('id') id: Project['id'],
-    @Body('name') name: Project['name'],
-    @Body('description') description: Project['description'],
-    @Body('amount') amount: Project['amount'],
-    @Body('status') status: Project['status']
+    @Param('id') id: string,
+    @Body() updateProjectDto: UpdateProjectDto
   ) {
     return await this.projectsService.updateProject({
       where: { id },
-      data: { name, description, amount, status }
+      data: {
+        name: updateProjectDto.name,
+        description: updateProjectDto.description,
+        amount: updateProjectDto.amount,
+        status: updateProjectDto.status
+      }
     });
   }
 
